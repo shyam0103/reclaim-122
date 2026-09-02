@@ -1,8 +1,9 @@
-name: Deploy to GitHub Pages
+name: Deploy RECLAIM 122
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -10,47 +11,46 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - run: npm test
+      - name: Run unit tests
+        run: npm test -- --exclude e2e/**
 
-      # BASE_PATH must match your repo name for project pages, e.g. /reclaim122/
-      # If you deploy this as a *user/org* page (repo named <you>.github.io) set BASE_PATH=/
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
-          # For the PUBLIC repo, leave Supabase secrets unset so the app builds in demo mode.
-          # For a PRIVATE deployment, set these as repo secrets instead:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_DEMO_MODE: ${{ secrets.VITE_SUPABASE_URL == '' && 'true' || 'false' }}
+          VITE_DEMO_MODE: "false"
+          BASE_PATH: /${{ github.event.repository.name }}/
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
