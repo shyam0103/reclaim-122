@@ -11,27 +11,60 @@ export function useAuth() {
       setLoading(false)
       return
     }
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setLoading(false)
     })
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-    })
+
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession)
+      }
+    )
+
     return () => sub.subscription.unsubscribe()
   }, [])
 
-  async function signInWithEmail(email: string): Promise<{ error: string | null }> {
-    if (!supabase) return { error: 'Supabase is not configured.' }
+  async function signInWithEmail(
+    email: string
+  ): Promise<{ error: string | null }> {
+    if (!supabase) {
+      return { error: 'Supabase is not configured.' }
+    }
+
     const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+      email
     })
-    return { error: error?.message ?? null }
+
+    return {
+      error: error?.message ?? null
+    }
+  }
+
+  async function verifyEmailOtp(
+    email: string,
+    token: string
+  ): Promise<{ error: string | null }> {
+    if (!supabase) {
+      return { error: 'Supabase is not configured.' }
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    })
+
+    return {
+      error: error?.message ?? null
+    }
   }
 
   async function signOut() {
-    if (supabase) await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
   }
 
   return {
@@ -40,6 +73,7 @@ export function useAuth() {
     loading,
     isAuthenticated: DEMO_MODE || !!session,
     signInWithEmail,
+    verifyEmailOtp,
     signOut
   }
 }
