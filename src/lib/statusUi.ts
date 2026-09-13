@@ -1,4 +1,27 @@
-import { Status } from '../types'
+import { GoalKey, Status } from '../types'
+
+/** Fixed per-goal identity colors — shown on icon badges regardless of that day's
+ * status. Keeps a goal visually recognizable everywhere (home, calendar, analytics). */
+export const GOAL_ACCENT: Record<GoalKey, string> = {
+  discipline: '#8A7CF0',
+  fitness: '#F2994A',
+  pm: '#4A90E2',
+  python: '#2BB673'
+}
+
+export const GOAL_ACCENT_SOFT_CLASS: Record<GoalKey, string> = {
+  discipline: 'bg-goal-discipline/15',
+  fitness: 'bg-goal-fitness/15',
+  pm: 'bg-goal-pm/15',
+  python: 'bg-goal-python/15'
+}
+
+export const GOAL_ACCENT_TEXT_CLASS: Record<GoalKey, string> = {
+  discipline: 'text-goal-discipline',
+  fitness: 'text-goal-fitness',
+  pm: 'text-goal-pm',
+  python: 'text-goal-python'
+}
 
 export const STATUS_LABEL: Record<Status, string> = {
   green: 'On track',

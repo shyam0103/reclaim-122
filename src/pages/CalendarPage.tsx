@@ -1,70 +1,69 @@
-import { useState } from 'react'
 import { useMission } from '../hooks/useMission'
 import { GOAL_ORDER, GOAL_META, Status } from '../types'
 import { MonthCalendar } from '../components/MonthCalendar'
 import { monthDates } from '../lib/dates'
+import { GOAL_ACCENT } from '../lib/statusUi'
+import { Link } from 'react-router-dom'
+import { Brain, Dumbbell, Briefcase, Code2, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+
+const ICONS: Record<string, typeof Brain> = { Brain, Dumbbell, Briefcase, Code2 }
 
 export function CalendarPage({ userId }: { userId: string | null }) {
   const m = useMission(userId)
-  const [activeGoal, setActiveGoal] = useState<'overall' | (typeof GOAL_ORDER)[number]>('overall')
-
   if (m.loading) return null
 
-  const statusByDate = (goal: typeof activeGoal) => {
-    const map = new Map<string, Status>()
-    for (const [date, rec] of m.records) {
-      if (goal === 'overall') map.set(date, rec.overallStatus)
-      else {
-        const g = rec.goals[goal]
-        if (g) map.set(date, g.status)
-      }
-    }
-    return map
-  }
-
-  const currentStatusByDate = statusByDate(activeGoal)
+  const statusByDate = new Map<string, Status>()
+  for (const [date, rec] of m.records) statusByDate.set(date, rec.overallStatus)
 
   return (
     <div className="px-5 pt-6 pb-28 max-w-md mx-auto">
-      <h1 className="text-xl font-semibold tracking-tight mb-4">Calendar</h1>
-
-      <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-5 px-5">
-        <GoalTab active={activeGoal === 'overall'} label="Overall" onClick={() => setActiveGoal('overall')} />
-        {GOAL_ORDER.map((g) => (
-          <GoalTab key={g} active={activeGoal === g} label={GOAL_META[g].label} onClick={() => setActiveGoal(g)} />
-        ))}
-      </div>
+      <h1 className="text-xl font-semibold tracking-tight mb-1">Calendar</h1>
+      <p className="text-sm text-muted dark:text-muted-dark mb-5">Overall mission history</p>
 
       <Legend />
 
       <div className="flex flex-col gap-6 mt-5">
-        {m.months.map(({ year, month, label }) => (
-          <div key={label} className="rounded-card bg-surface dark:bg-surface-dark border border-line dark:border-line-dark p-4">
+        {m.months.map(({ year, month, label }, i) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.05 }}
+            className="rounded-card bg-surface dark:bg-surface-dark shadow-soft dark:shadow-soft-dark p-4"
+          >
             <p className="text-sm font-medium mb-3">{label}</p>
-            <MonthCalendar
-              year={year}
-              month={month}
-              monthDates={monthDates(year, month)}
-              statusByDate={currentStatusByDate}
-              today={m.today}
-            />
-          </div>
+            <MonthCalendar year={year} month={month} monthDates={monthDates(year, month)} statusByDate={statusByDate} today={m.today} />
+          </motion.div>
         ))}
       </div>
-    </div>
-  )
-}
 
-function GoalTab({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 text-xs font-medium px-3.5 py-2 rounded-full border ${
-        active ? 'bg-ink dark:bg-ink-dark text-paper dark:text-paper-dark border-transparent' : 'border-line dark:border-line-dark text-muted dark:text-muted-dark'
-      }`}
-    >
-      {label}
-    </button>
+      <p className="text-sm font-medium mt-7 mb-3">By goal</p>
+      <div className="flex flex-col gap-2.5">
+        {GOAL_ORDER.map((goal) => {
+          const Icon = ICONS[GOAL_META[goal].icon]
+          const accent = GOAL_ACCENT[goal]
+          const streak = m.goalStreaks[goal]
+          return (
+            <Link
+              key={goal}
+              to={`/calendar/${goal}`}
+              className="rounded-card bg-surface dark:bg-surface-dark shadow-soft dark:shadow-soft-dark
+                         p-3.5 flex items-center gap-3 active:scale-[0.98] transition-transform"
+            >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${accent}22`, color: accent }}>
+                <Icon size={17} strokeWidth={1.8} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{GOAL_META[goal].label}</p>
+                <p className="text-xs text-muted dark:text-muted-dark">{streak.current} day streak</p>
+              </div>
+              <ChevronRight size={16} className="text-muted dark:text-muted-dark shrink-0" />
+            </Link>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
