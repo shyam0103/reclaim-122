@@ -16,6 +16,8 @@ A 122-day personal consistency tracker (Sep 1 – Dec 31, 2026) for four goals: 
 | Hosting | GitHub Pages + GitHub Actions | Free static hosting + free CI minutes on a public repo |
 | Auth | Supabase magic-link (passwordless) | No password UX to build or maintain |
 | Tests | Vitest, React Testing Library, Playwright | Core logic is unit-tested; check-in flow has an e2e smoke test |
+| Charts | Recharts | Weekly consistency bars, status breakdown pie, per-goal metric trends |
+| Motion | Framer Motion | Card entrance animations, count-up numbers, page transitions |
 
 Nothing here requires a paid plan. Supabase's free project pauses after ~1 week of total inactivity
 (not daily use) — a normal daily-use pattern keeps it awake indefinitely.
@@ -89,7 +91,31 @@ Full schema with constraints, indexes, and RLS policies: [`supabase/schema.sql`]
   at all is NOT_RECORDED and is neutral — it neither breaks nor extends the streak.
 - No day, goal, or mission ever gets a 0–100 score. This was a deliberate decision (see below).
 
-## Decision log
+## v2: UI/UX redesign
+
+The look and navigation were substantially reworked while leaving all status/streak
+business logic untouched (still the same 22 passing unit tests):
+
+- **Home**: a swipeable day strip (no arrows — just scroll) shows every mission day at
+  a glance; the four headline stats are now animated, colorful icon cards (count-up
+  numbers, a pulsing flame while a streak is alive); a small ring shows mission
+  progress (% of days elapsed).
+- **Per-goal drill-down**: tapping a goal — from Home, Calendar, or Analytics — opens
+  a dedicated page for that goal instead of a shared generic view. Calendar and
+  Analytics each have their own goal-specific destinations (`/calendar/:goal`,
+  `/analytics/:goal`), matching the pattern of the top-level Calendar/Analytics hubs.
+- **Analytics**: an overall status breakdown (pie) and weekly consistency trend (bar
+  chart) up top, then a goal picker. Each goal's page adds one extra chart only where
+  it's genuinely informative — weight trend for Fitness, applications/week for PM,
+  learning minutes/week for Python — nothing decorative or filler.
+- **Visual identity**: every goal now has a fixed accent color for its icon (independent
+  of that day's green/blue/red/yellow status), rounded elevated cards with soft
+  shadows instead of hard borders, and consistent Apple Health-inspired spacing —
+  without copying Apple's actual UI or assets.
+- Old `/goal/:goal` links redirect automatically to `/analytics/:goal` so nothing
+  breaks if that URL was bookmarked.
+
+
 
 - **No daily score.** A single number invites optimizing the number instead of the behavior, and
   collapses four independent goals into one figure that hides which one actually needs attention.
