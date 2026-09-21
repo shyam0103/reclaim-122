@@ -266,8 +266,12 @@ export function Today({ userId }: { userId: string | null }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="mt-6 w-full rounded-full bg-ink dark:bg-ink-dark text-paper dark:text-paper-dark
-                   py-3.5 text-sm font-medium active:scale-[0.98] transition-transform disabled:opacity-60"
+        className="mt-6 w-full rounded-full bg-surface dark:bg-surface-dark
+           border border-line dark:border-line-dark
+           text-ink dark:text-ink-dark
+           shadow-soft dark:shadow-soft-dark
+           py-3.5 text-sm font-medium
+           active:scale-[0.98] transition-transform disabled:opacity-60"
       >
         {saving ? 'Saving…' : saved ? 'Saved ✓  Save again' : 'Save day'}
       </button>
