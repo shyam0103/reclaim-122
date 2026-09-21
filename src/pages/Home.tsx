@@ -120,8 +120,12 @@ export function Home({ userId }: { userId: string | null }) {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
         <Link
           to="/today"
-          className="mt-6 block text-center rounded-full bg-ink dark:bg-ink-dark text-paper dark:text-paper-dark
-                     py-3.5 text-sm font-medium active:scale-[0.98] transition-transform"
+          className="mt-6 block text-center rounded-full bg-surface dark:bg-surface-dark
+           border border-line dark:border-line-dark
+           text-ink dark:text-ink-dark
+           shadow-soft dark:shadow-soft-dark
+           py-3.5 text-sm font-medium
+           active:scale-[0.98] transition-transform"
         >
           {todayRecord ? 'Continue today' : 'Check in'}
         </Link>
